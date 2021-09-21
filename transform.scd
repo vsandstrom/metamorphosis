@@ -41,6 +41,7 @@ path = File.getcwd;
 
 fork{
 	var size = originRaw.size;
+	var alter = 0;
 	var iter = 0;
 	
 	// Load destination file into FloatArray
@@ -55,30 +56,57 @@ fork{
 		origin.readData(originRaw);
 	});
 
+	{ReplaceOut.ar(0, NHHall.ar(In.ar(0, 2)))}.play;
+
 	loop{	
 		s.sync;
-		if(iter == 0, { // Use 2 alternating buffers
+		if(alter == 0, { // Use 2 alternating buffers
 			buf0.free;
 			buf0 = Buffer.loadCollection(s, originRaw, 2);
-			iter = 1;
+			alter = 1;
 			{PlayBuf.ar(2, buf0, 0.5) * 0.3}.play;
 		}, {
 			buf1.free;
 			buf1 = Buffer.loadCollection(s, originRaw, 2);
-			iter = 0;
+			alter = 0;
 			{PlayBuf.ar(2, buf1, 0.5) * 0.3}.play;
 		});
-		30.wait;
+		35.wait;
 
 		numChange.do({ |item, i| // Do transition
 			rand = rrand(0, originRaw.size);
+
 			if (originRaw[rand] == destinRaw[rand], {
+
+				if(iter > numChange, {  // check if recursion has gone haywire
+
+					// switch which file is getting destroyed/transformed
+					if(destin.path == path ++ "drone1_temp.wav", { 
+
+						destin.readData(originRaw);
+						origin.readData(destinRaw);
+						"switched - oposite".postln;
+
+					}, {
+
+						destin.readData(destinRaw);
+						origin.readData(originRaw);
+						"switched - same".postln;
+
+
+					});
+
+				}, { // if not haywire, continue recuresion
+
 				thisFunction.value(); // if origin and destination sample is same, 
-									  // recursively find another that is not.
+				iter = iter + 1;	  // recursively find another that is not.
+
+				});
+
 			}, {
 				originRaw[rand] = destinRaw[rand];
-			}
-		);
+			});
+			iter = 0; // reset recursion counter
 		});
 		
 		// origin = SoundFile.new.headerFormat_("WAVE").sampleFormat_("int24").numChannels_(2);
@@ -89,4 +117,4 @@ fork{
 };
 )
 
-{ReplaceOut.ar(0, NHHall.ar(In.ar(0, 2)) * 0.15)}.play;
+
