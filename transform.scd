@@ -7,6 +7,11 @@
 
 // TODO: Break infinite loop when no available samples can be found
 
+// Doesn't count recursions correctly, find out why!
+// Unless I can make it work, I cannot stop recursion when it 
+// reaches final destination. Then I cannot halt recursion and 
+// make files transistion back to origin.
+
 s.boot;
 s.memSize = 8192 * 16;
 (
@@ -42,6 +47,8 @@ path = File.getcwd;
 fork{
 	var size = originRaw.size;
 	var alter = 0;
+	var epoch = 0;
+	var recSum = 0;
 	var iter = 0;
 	
 	// Load destination file into FloatArray
@@ -72,20 +79,23 @@ fork{
 			{PlayBuf.ar(2, buf1, 0.5) * 0.3}.play;
 		});
 		35.wait;
+		epoch = epoch + 1;
+		format("EPOCH %\n", epoch).postln;
 
 		numChange.do({ |item, i| // Do transition
 			rand = rrand(0, originRaw.size);
 
 			if (originRaw[rand] == destinRaw[rand], {
 
+				iter = iter + 1;
 				if(iter > numChange, {  // check if recursion has gone haywire
 
 					// switch which file is getting destroyed/transformed
-					if(destin.path == path ++ "drone1_temp.wav", { 
+					if(destin.path == (path +/+ "drone1_temp.wav").asString, { 
 
 						destin.readData(originRaw);
 						origin.readData(destinRaw);
-						"switched - oposite".postln;
+						"switched - opposite".postln;
 
 					}, {
 
@@ -96,18 +106,16 @@ fork{
 
 					});
 
-				}, { // if not haywire, continue recuresion
-
-				thisFunction.value(); // if origin and destination sample is same, 
-				iter = iter + 1;	  // recursively find another that is not.
-
 				});
-
+				thisFunction.value();
 			}, {
 				originRaw[rand] = destinRaw[rand];
-			});
+			}); 
+			recSum = iter;
+
 			iter = 0; // reset recursion counter
 		});
+		format("Number of recursion: %\n \n", recSum).postln;
 		
 		// origin = SoundFile.new.headerFormat_("WAVE").sampleFormat_("int24").numChannels_(2);
 		// origin.openWrite(path +/+ "drone0_temp.wav");

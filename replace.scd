@@ -7,6 +7,7 @@ s.waitForBoot({
 	var nameNum;
 	var path;
 	var buf = Buffer.alloc(s, s.sampleRate * 60, 2);
+	var fund = 300;
 
 	SynthDef(\drone, {
 		var sig, env;
@@ -41,17 +42,17 @@ s.waitForBoot({
 	s.sync;
 
 
-	// Synth(\rec);
-	// nameNum = 0;
-	// Synth(\drone, [\freq, 1* 300]);
-	// Synth(\drone, [\freq, 6/5* 300]);
-	// Synth(\drone, [\freq, 5/3* 300]);
-	
 	Synth(\rec);
-	nameNum = 1;
-	Synth(\drone, [\freq, 2/3* 300]);
-	Synth(\drone, [\freq, 6.5/5* 300]);
-	Synth(\drone, [\freq, 7/9* 300]);
+	nameNum = 0;
+	Synth(\drone, [\freq, 1.3375* fund]);
+	Synth(\drone, [\freq, 1.6719* fund]);
+	Synth(\drone, [\freq, ( 1.4953 * 2)* fund]);
+	
+	// Synth(\rec);
+	// nameNum = 1;
+	// Synth(\drone, [\freq, 1* fund]);
+	// Synth(\drone, [\freq, (1.25 * 2)* fund]);
+	// Synth(\drone, [\freq, 1.4953* fund]);
 
 	30.wait;
 	
