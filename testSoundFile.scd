@@ -1,5 +1,8 @@
 s.boot;
+Server.killAll;
 (
+
+// TODO: catch recursion if it gets out of hand
 var path;
 var file;
 var data;
@@ -7,6 +10,7 @@ var buf;
 var raw;
 var rand = 0;
 var size = 0;
+var count = 0;
 
 path = "/Users/viktorsandstrom/Downloads/TRUMLOOPAR\ LÅT\ 1.1/";
 
@@ -28,19 +32,29 @@ fork {
 
 	buf = Buffer.sendCollection(s, raw, 2);
 	s.sync;
-
-	{PlayBuf.ar( 2, buf, 0.76)}.play;
+	
+Buffer.read(s, "/Users/viktorsandstrom/Documents/DAW/SC/MFsampler/samples/piano1.wav");
+	{LeakDC.ar(PlayBuf.ar( 2, buf, 0.76))}.play;
 	s.sync;
 
 
 	100.do({ // Adds 100 new 0
 		rand = rrand(0, raw.size-1);
 
-		if (raw[rand] == 0.0, {
-			raw[ [ rrand(0, rand -1), rrand(rand + 1, raw.size-1) ].choose ] = 0.0;
-		}, {
+		if (raw[rand] == 0.0) {
+			:
+			count = count + 1;
+			count.postln;
+			thisFunction.value();
+		}{
 			raw[rand] = 0.0;
-		});
+		};
+
+		// if (raw[rand] == 0.0, {
+		// 	raw[ [ rrand(0, rand -1), rrand(rand + 1, raw.size-1) ].choose ] = 0.0;
+		// }, {
+		// 	raw[rand] = 0.0;
+		// });
 	});
 	file = SoundFile.new.headerFormat_("WAVE").sampleFormat_("int24").numChannels_(2);
 	file = SoundFile.openWrite("/Users/viktorsandstrom/Downloads/TRUMLOOPAR\ LÅT\ 1.1/KOMP\ 4_temp.wav");

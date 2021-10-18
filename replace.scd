@@ -42,17 +42,17 @@ s.waitForBoot({
 	s.sync;
 
 
-	Synth(\rec);
-	nameNum = 0;
-	Synth(\drone, [\freq, 1.3375* fund]);
-	Synth(\drone, [\freq, 1.6719* fund]);
-	Synth(\drone, [\freq, ( 1.4953 * 2)* fund]);
-	
 	// Synth(\rec);
-	// nameNum = 1;
-	// Synth(\drone, [\freq, 1* fund]);
-	// Synth(\drone, [\freq, (1.25 * 2)* fund]);
-	// Synth(\drone, [\freq, 1.4953* fund]);
+	// nameNum = 0;
+	// Synth(\drone, [\freq, 1.3375* fund]);
+	// Synth(\drone, [\freq, 1.6719* fund]);
+	// Synth(\drone, [\freq, ( 1.4953 * 2)* fund]);
+	
+	Synth(\rec);
+	nameNum = 1;
+	Synth(\drone, [\freq, 1* fund]);
+	Synth(\drone, [\freq, (1.25 * 2)* fund]);
+	Synth(\drone, [\freq, 1.4953* fund]);
 
 	30.wait;
 	
@@ -63,6 +63,3 @@ s.waitForBoot({
 
 
 });
-
-RecordBuf
-
