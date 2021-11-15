@@ -26,23 +26,18 @@ var originRaw;
 var destinRaw;
 var rand = 0;
 
-// ~swapBuffers = {
 
-// }
-
-
-~findValidSample = {|start, goal, count = 0, x = 0|
+~findValidSample = {|start, goal, x = 0, chunk|
 	var rand = rrand(0, start.size);
-	if (count < start.size){
-		if (x == rand && start[rand] == goal[rand]) {
-			count = count + 1;
-			count.postln;
-			~findValidSample.value(start, goal, count, rand);
-		} {
-			start[rand] = goal[rand];
-		}; 
-	}{
-	}
+	var i = 0;
+	if (x == rand && start[rand] == goal[rand]) {
+		thisFunction.value(start, goal, rand);
+	} {
+		for(i < chunk){
+			start.wrapPut((rand + i), goal[(rand + i)]);
+		}
+	
+	}; 
 };
 
 path = File.getcwd;
@@ -64,6 +59,7 @@ path = File.getcwd;
 
 fork{
 	var size = originRaw.size;
+	var chunk = 4000;
 	var alter = 0;
 	var epoch = 0;
 	var recSum = 0;

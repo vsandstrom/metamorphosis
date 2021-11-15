@@ -26,23 +26,18 @@ var originRaw;
 var destinRaw;
 var rand = 0;
 
-// ~swapBuffers = {
+// function safe for indicies that is out of bounds, although this will lead to file never reaching a conclusion
+// if at different lengths. where it wraps, the indicies will have two possible outcomes, the first index  in
+// destination-file or the index at (destionation.size + 1). this algorithm should only be used on files of the same
+// lengths
 
-// }
-
-
-~findValidSample = {|start, goal, count = 0, x = 0|
+~findValidSample = {|start, goal, x = 0|
 	var rand = rrand(0, start.size);
-	if (count < start.size){
-		if (x == rand && start[rand] == goal[rand]) {
-			count = count + 1;
-			count.postln;
-			~findValidSample.value(start, goal, count, rand);
-		} {
-			start[rand] = goal[rand];
-		}; 
-	}{
-	}
+	if (x == rand && start[rand] == goal[rand]) {
+		thisFunction.value(start, goal, rand);
+	} {
+		start.wrapPut(rand, goal[rand]);
+	}; 
 };
 
 path = File.getcwd;

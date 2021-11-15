@@ -26,23 +26,14 @@ var originRaw;
 var destinRaw;
 var rand = 0;
 
-// ~swapBuffers = {
 
-// }
-
-
-~findValidSample = {|start, goal, count = 0, x = 0|
+~findValidSample = {|start, goal, x = 0|
 	var rand = rrand(0, start.size);
-	if (count < start.size){
-		if (x == rand && start[rand] == goal[rand]) {
-			count = count + 1;
-			count.postln;
-			~findValidSample.value(start, goal, count, rand);
-		} {
-			start[rand] = goal[rand];
-		}; 
-	}{
-	}
+	if (x == rand && start[rand] == goal[rand]) {
+		thisFunction.value(start, goal, rand);
+	} {
+		start[rand] = goal[rand];
+	}; 
 };
 
 path = File.getcwd;

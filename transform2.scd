@@ -1,3 +1,4 @@
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																											  //
 //								DIGITAL METAMORPHOSIS DESTRUCTION / CREATION								  //
@@ -10,11 +11,12 @@
 // Unless I can make it work, I cannot stop recursion when it 
 // reaches final destination. Then I cannot halt recursion and 
 // make files transistion back to origin.
-s.makeGui;
+
 s.boot;
+s.makeWindow;
 s.memSize = 8192 * 16;
 (
-var numChange = 250000;
+var numChange = 25000;
 var path;
 var file;
 var origin;
@@ -25,25 +27,6 @@ var data;
 var originRaw;
 var destinRaw;
 var rand = 0;
-
-// ~swapBuffers = {
-
-// }
-
-
-~findValidSample = {|start, goal, count = 0, x = 0|
-	var rand = rrand(0, start.size);
-	if (count < start.size){
-		if (x == rand && start[rand] == goal[rand]) {
-			count = count + 1;
-			count.postln;
-			~findValidSample.value(start, goal, count, rand);
-		} {
-			start[rand] = goal[rand];
-		}; 
-	}{
-	}
-};
 
 path = File.getcwd;
 
@@ -68,6 +51,7 @@ fork{
 	var epoch = 0;
 	var recSum = 0;
 	var iter = 0;
+	var numSampRand = 0;
 	
 	// Load destination file into FloatArray
 	destin = SoundFile.openRead(path +/+ "drone1_temp.wav");
@@ -100,8 +84,54 @@ fork{
 		epoch = epoch + 1;
 		format("EPOCH %\n", epoch).postln;
 
-		numChange.do({ |item, i| // Do transition
-			~findValidSample.value(originRaw, destinRaw);
+		numChange.do({ |i| // Do transition
+			var leftValue = originRaw[rand];
+			var rightValue = destinRaw[rand];
+			rand = rrand(0, originRaw.size);
+		
+			//if (leftValue == rightValue) {
+
+			//	// iter = iter + 1;
+			//	if (iter > numChange) {  // check if recursion has gone haywire
+
+			//		// switch which file is getting destroyed/transformed
+			//		if (destin.path == (path.asString +/+ "drone1_temp.wav")) { 
+
+			//			destin.readData(originRaw);
+			//			origin.readData(destinRaw);
+			//			"switched - opposite".postln;
+			//			//break;
+
+			//		}
+			//		{
+
+			//			destin.readData(destinRaw);
+			//			origin.readData(originRaw);
+			//			"switched - same".postln;
+			//			//break;
+
+
+			//		};
+
+			//	};
+				// thisFunction.value()
+			// } 
+			{
+				numSampRand = rrand( 5, 100 );
+				numSampRand.do({ | i |
+					var index = rand + i;
+					leftValue = originRaw[index];
+					rightValue = destinRaw[index];
+
+					if (leftValue == rightValue) {
+						iter = iter + 1;
+						thisFunction.value()
+					}{
+						originRaw[(rand + i)] = destinRaw[(rand + i)];
+					};
+				});
+				//originRaw[rand] = destinRaw[rand];
+			}; 
 			recSum = iter;
 
 			iter = 0; // reset recursion counter
@@ -116,3 +146,8 @@ fork{
 };
 )
 
+~func = {
+	| x |
+	if (x == 0) {1} {x * thisFunction.value(x-1)}
+}
+~func.value ( 4 );

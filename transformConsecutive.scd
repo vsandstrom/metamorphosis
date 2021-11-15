@@ -14,7 +14,7 @@ s.makeGui;
 s.boot;
 s.memSize = 8192 * 16;
 (
-var numChange = 250000;
+var numChange = 300;
 var path;
 var file;
 var origin;
@@ -26,23 +26,18 @@ var originRaw;
 var destinRaw;
 var rand = 0;
 
-// ~swapBuffers = {
 
-// }
-
-
-~findValidSample = {|start, goal, count = 0, x = 0|
+~findValidSample = {|start, goal, chunk, x = 0|
 	var rand = rrand(0, start.size);
-	if (count < start.size){
-		if (x == rand && start[rand] == goal[rand]) {
-			count = count + 1;
-			count.postln;
-			~findValidSample.value(start, goal, count, rand);
-		} {
-			start[rand] = goal[rand];
-		}; 
-	}{
-	}
+	var i = 0;
+	if (x == rand && start[rand] == goal[rand]) {
+		thisFunction.value(start, goal, chunk, rand);
+	} {
+		for(0, chunk, {|i|
+			start.wrapPut((rand + i), goal.wrapAt((rand + i)));
+		});
+	
+	}; 
 };
 
 path = File.getcwd;
@@ -64,6 +59,7 @@ path = File.getcwd;
 
 fork{
 	var size = originRaw.size;
+	var chunk = 4000;
 	var alter = 0;
 	var epoch = 0;
 	var recSum = 0;
@@ -96,12 +92,15 @@ fork{
 			alter = 0;
 			{PlayBuf.ar(2, buf1, 0.5) * 0.3}.play;
 		});
-		35.wait;
+
+		// Contextual wait-time between iterations.
+		wait(((originRaw.size / s.sampleRate)/ 3 ));
+		//35.wait;
 		epoch = epoch + 1;
 		format("EPOCH %\n", epoch).postln;
 
 		numChange.do({ |item, i| // Do transition
-			~findValidSample.value(originRaw, destinRaw);
+			~findValidSample.value(originRaw, destinRaw, chunk);
 			recSum = iter;
 
 			iter = 0; // reset recursion counter

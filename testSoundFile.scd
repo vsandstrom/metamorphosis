@@ -42,7 +42,7 @@ Buffer.read(s, "/Users/viktorsandstrom/Documents/DAW/SC/MFsampler/samples/piano1
 		rand = rrand(0, raw.size-1);
 
 		if (raw[rand] == 0.0) {
-			:
+			
 			count = count + 1;
 			count.postln;
 			thisFunction.value();
