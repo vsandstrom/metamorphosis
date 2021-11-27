@@ -59,7 +59,6 @@ path = File.getcwd;
 
 fork{
 	var size = originRaw.size;
-	var chunk = 4000;
 	var alter = 0;
 	var epoch = 0;
 	var recSum = 0;
