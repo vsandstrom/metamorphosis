@@ -6,6 +6,25 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+//(
+//~listener = {|msg, time, replyAddr, recvPort|
+//	if (msg[0] != "/status.reply", {
+//		// Log all received messages to the console.
+//		//("Message received on port" + recvPort + "from " + replyAddr.ip + ":" + replyAddr.port + ":" + msg).postln;
+//	});
+//};
+
+//o = OSCFunc.new({|msg, time, addr, receivePort|
+
+//	~chunk = msg[1];
+
+//}, '/change');
+
+//thisProcess.addOSCRecvFunc(~listener);
+//);
+
+
+s.boot;
 s.waitForBoot({
 	// SETUP
 	var numChanges = 0;
@@ -14,11 +33,13 @@ s.waitForBoot({
 	var files, data;
 	var syn0, syn1;
 	var play;
-	var win, text0, text1, num0, num1, button0, button1;
+	var win, text0, text1, num0, num1, button0, button1, slider0, slider1;
 	
 	// Path to folder where the audio files are:
 	path = "~/Documents/DAW/SC/Samples/Installation/";
 
+	~button = 0;
+	~buttonSmudge = 0;
 
 	// functions
 	~smudge = {|array, max|
@@ -52,7 +73,6 @@ s.waitForBoot({
 			for(0, chunk, {|i|
 				larv.wrapPut((rand + i), fjril.wrapAt((rand + i)));
 			});
-		
 		}; 
 	};
 
@@ -61,63 +81,8 @@ s.waitForBoot({
 	// housekeeping
 	Buffer.freeAll;
 
-	// Window GUI
-
-	(
-		win = Window("gui", Rect(800, 300, 300, 270));
-
-		// Number of changes in source file
-		text0 = StaticText(win, Rect(20, 10, 80, 20))
-			.string_("Changes");
-		num0 = NumberBox(win, Rect(20, 35, 50, 20));
-		~slider = Slider(win, Rect(30, 60, 30, 180))
-			.action_({|slider|
-				var val;
-				~slider0 = slider.value;
-				val = slider.value.linlin(0.0, 1.0, 0, 250).ceil;
-				num0.value_(val);
-			}
-		);
-
-		// The size of the "change" (in samples)
-		// t = TextField(win, Rect(50, 50))
-		// 	.string_("Size");
-		text1 = StaticText(win, Rect(100, 10, 80, 20))
-			.string_("Size");
-		num1 = NumberBox(win, Rect(100, 35, 50, 20));
-		~slider = Slider(win, Rect(110, 60, 30, 180))
-			.action_({|slider|
-				var val;
-				~slider1 = slider.value;
-				val = slider.value.linlin(0.0, 1.0, 0, 15000).ceil;
-				num1.value_(val);
-			}
-		);
-
-		// Reset button
-		button0 = Button(win, Rect(180, 60, 100, 50))
-			.states_([
-				["Stop&Reset", Color.red, Color.black],
-				["Restart", Color.white, Color.blue]
-			])
-			.action_({arg button;
-				~button = button.value;
-			}
-		);
-		button1 = Button(win, Rect(180, 160, 100, 50))
-			.states_([
-				["SmudgeOn", Color.black, Color.white],
-				["SmudgeOff", Color.black, Color.grey]
-			])
-			.action_({arg button;
-				~buttonSmudge = button.value;
-			}
-		);
-		win.front;
-		CmdPeriod.add({win.close});
-	);
 	s.sync;
-	
+
 	// load soundfiles into arrays
 	dirs = PathName.new(path).entries;
 	files = Array.new(dirs.size);
@@ -129,7 +94,7 @@ s.waitForBoot({
 
 		// open file - .fullPath is needed to get the string and not the PathName object
 		data.openRead(dirs[i].fullPath);
-		("% \% loaded".format((percent * (i+1)))).postln;
+		("Loading... " ++ (percent * (i+1)).asString ++ " %").postln;
 		if (data.notNil){
 			// add arrays to one array, easier for random sourcing.
 			arr = FloatArray.newClear(( data.numFrames*data.numChannels ));
@@ -153,12 +118,12 @@ s.waitForBoot({
 		var innerFiles;
 		var check = true;
 		var max = 1.0;
-		var chunk = 0;
 		var numC = 2;
 
 
 		// Fetch fresh copy after reset
 		innerFiles = files.deepCopy;
+		s.sync;
 		source = innerFiles.removeAt(rrand(0, files.size - 1));
 		2.wait;
 
@@ -209,7 +174,7 @@ s.waitForBoot({
 			// METAMORPHOSIS 
 
 			numChanges.do{
-				~metamorphosis.value(source, file, chunk); 
+				~metamorphosis.value(source, file, ~chunk); 
 			};
 					
 			(((source.size / s.sampleRate) / 2)* 0.9).wait;
@@ -218,7 +183,7 @@ s.waitForBoot({
 
 				// dynamically control how big the chunks are (x.do)
 			numChanges = ~slider0.linlin(0.0, 1.0, 0, 250).ceil;
-			chunk = ~slider1.linlin(0.0, 1.0, 0, 15000).ceil;
+			~chunk = ~slider1.linlin(0.0, 1.0, 0, 15000).ceil;
 
 		}.yield;
 
@@ -229,19 +194,69 @@ s.waitForBoot({
 	fork{
 				// if reset button has been pressed => reset Routine
 		loop{
-			if (~button > 0.5) {
-				"Reset!".postln;
-				play.stop;
-				play.reset;
-				Buffer.freeAll;
-				syn0.free;
-				syn1.free;
-				1.wait;
+			if (~button > 0.5) 
+			{play.stop; play.reset; Buffer.freeAll; syn0.free; syn1.free; 1.wait; "Reset!".postln;
 			}{
 				if (play.isPlaying == false)
-				{3.wait;play.next; };
+				{count = 0; 3.wait;play.next; "Playing".postln;}
 			};
-			0.01.wait;
+			0.1.wait;
 		};
 	};
+
+	// Window GUI
+
+	(
+		win = Window("gui", Rect(800, 300, 300, 270));
+
+		// Number of changes in source file
+		text0 = StaticText(win, Rect(20, 10, 80, 20))
+			.string_("Changes");
+		num0 = NumberBox(win, Rect(20, 35, 50, 20));
+		slider0 = Slider(win, Rect(30, 60, 30, 180))
+			.action_({|slider|
+				var val;
+				~slider0 = slider.value;
+				val = slider.value.linlin(0.0, 1.0, 0, 250).ceil;
+				num0.value_(val);
+			}
+		);
+
+		// The size of the "change" (in samples)
+		// t = TextField(win, Rect(50, 50))
+		// 	.string_("Size");
+		text1 = StaticText(win, Rect(100, 10, 80, 20))
+			.string_("Size");
+		num1 = NumberBox(win, Rect(100, 35, 50, 20));
+		slider1 = Slider(win, Rect(110, 60, 30, 180))
+			.action_({|slider|
+				var val;
+				~slider1 = slider.value;
+				val = slider.value.linlin(0.0, 1.0, 0, 15000).ceil;
+				num1.value_(val);
+			}
+		);
+
+		// Reset button
+		button0 = Button(win, Rect(180, 60, 100, 50))
+			.states_([
+				["Stop&Reset", Color.red, Color.black],
+				["Restart", Color.white, Color.blue]
+			])
+			.action_({arg button;
+				~button = button.value;
+			}
+		);
+		button1 = Button(win, Rect(180, 160, 100, 50))
+			.states_([
+				["SmudgeOn", Color.black, Color.white],
+				["SmudgeOff", Color.black, Color.grey]
+			])
+			.action_({arg button;
+				~buttonSmudge = button.value;
+			}
+		);
+		win.front;
+		CmdPeriod.add({win.close});
+	);
 });
