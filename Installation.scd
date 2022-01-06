@@ -1,28 +1,19 @@
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //																											  //
 //								DIGITAL METAMORPHOSIS DESTRUCTION / CREATION								  //
 //																											  //
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 
-//(
-//~listener = {|msg, time, replyAddr, recvPort|
-//	if (msg[0] != "/status.reply", {
-//		// Log all received messages to the console.
-//		//("Message received on port" + recvPort + "from " + replyAddr.ip + ":" + replyAddr.port + ":" + msg).postln;
-//	});
-//};
+Create a song with a couple different instruments that put together makes a song. but they never play together.
+Would be nice to write some house / techno song, where there are several components.
 
-//o = OSCFunc.new({|msg, time, addr, receivePort|
+*/
 
-//	~chunk = msg[1];
-
-//}, '/change');
-
-//thisProcess.addOSCRecvFunc(~listener);
-//);
-
+NetAddr.langPort; // Port: 57120
 
 s.boot;
 s.waitForBoot({
@@ -34,9 +25,16 @@ s.waitForBoot({
 	var syn0, syn1;
 	var play;
 	var win, text0, text1, num0, num1, button0, button1, slider0, slider1;
-	
+
+	~slider0 = 0;
+	~slider1 = 0;
+	~button = 0;
+	~buttonSmudge = 0;
+
 	// Path to folder where the audio files are:
 	path = "~/Documents/DAW/SC/Samples/Installation/";
+
+
 
 	~button = 0;
 	~buttonSmudge = 0;
@@ -73,11 +71,11 @@ s.waitForBoot({
 			for(0, chunk, {|i|
 				larv.wrapPut((rand + i), fjril.wrapAt((rand + i)));
 			});
-		}; 
+		};
 	};
 
 	// {NHHall.ar(In.ar(0, 2), 4)}.play;
-	
+
 	// housekeeping
 	Buffer.freeAll;
 
@@ -86,7 +84,7 @@ s.waitForBoot({
 	// load soundfiles into arrays
 	dirs = PathName.new(path).entries;
 	files = Array.new(dirs.size);
-	
+
 	for (0, dirs.size - 1) { |i|
 		var arr;
 		var percent = 100 / dirs.size;
@@ -169,14 +167,14 @@ s.waitForBoot({
 				if(~buttonSmudge > 0.5) {
 					~smudge.value(source, max);
 				};
-			
 
-			// METAMORPHOSIS 
+
+			// METAMORPHOSIS
 
 			numChanges.do{
-				~metamorphosis.value(source, file, ~chunk); 
+				~metamorphosis.value(source, file, ~chunk);
 			};
-					
+
 			(((source.size / s.sampleRate) / 2)* 0.9).wait;
 
 			// INTERACTIVITY
@@ -194,7 +192,7 @@ s.waitForBoot({
 	fork{
 				// if reset button has been pressed => reset Routine
 		loop{
-			if (~button > 0.5) 
+			if (~button > 0.5)
 			{play.stop; play.reset; Buffer.freeAll; syn0.free; syn1.free; 1.wait; "Reset!".postln;
 			}{
 				if (play.isPlaying == false)
@@ -259,4 +257,20 @@ s.waitForBoot({
 		win.front;
 		CmdPeriod.add({win.close});
 	);
+
+	o = OSCFunc.new({|msg, time, addr, receivePort|
+    		~button = msg[1];
+	}, '/reset');
+
+	p = OSCFunc.new({|msg, time, addr, receivePort|
+    		~buttonSmudge = msg[1];
+	}, '/smudge');
+
+	q = OSCFunc.new({|msg, time, addr, receivePort|
+    		~slider0 = msg[1];
+	}, '/slider0');
+
+	r = OSCFunc.new({|msg, time, addr, receivePort|
+    		~slider1 = msg[1];
+	}, '/slider1');
 });
