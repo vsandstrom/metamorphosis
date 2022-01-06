@@ -34,11 +34,6 @@ s.waitForBoot({
 	// Path to folder where the audio files are:
 	path = "~/Documents/DAW/SC/Samples/Installation/";
 
-
-
-	~button = 0;
-	~buttonSmudge = 0;
-
 	// functions
 	~smudge = {|array, max|
 		var padding = 150;
@@ -182,9 +177,7 @@ s.waitForBoot({
 				// dynamically control how big the chunks are (x.do)
 			numChanges = ~slider0.linlin(0.0, 1.0, 0, 250).ceil;
 			~chunk = ~slider1.linlin(0.0, 1.0, 0, 15000).ceil;
-
 		}.yield;
-
 	});
 
 	play.play;
@@ -195,6 +188,7 @@ s.waitForBoot({
 			if (~button > 0.5)
 			{play.stop; play.reset; Buffer.freeAll; syn0.free; syn1.free; 1.wait; "Reset!".postln;
 			}{
+				// wait for the reset and buffers clearing before playing again
 				if (play.isPlaying == false)
 				{count = 0; 3.wait;play.next; "Playing".postln;}
 			};
