@@ -1,17 +1,10 @@
 
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//																											  //
-//								DIGITAL METAMORPHOSIS DESTRUCTION / CREATION								  //
-//																											  //
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-
-Create a song with a couple different instruments that put together makes a song. but they never play together.
-Would be nice to write some house / techno song, where there are several components.
-
-*/
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																										   //
+//												METAMORPHOSIS											   //
+//																										   //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 NetAddr.langPort; // Port: 57120
 
@@ -72,7 +65,7 @@ s.waitForBoot({
 
 	// {NHHall.ar(In.ar(0, 2), 4)}.play;
 
-	// housekeeping
+	// housekeeping after restart
 	Buffer.freeAll;
 
 	s.sync;
@@ -159,7 +152,7 @@ s.waitForBoot({
 			// DO TRANSFORMATION HERE
 					// array manipulation
 
-				// smudge before adding new chunks? gives clarity to new chunks introduced
+				// smudge before adding new chunks? gives "clarity" to new chunks introduced
 				if(~buttonSmudge > 0.5) {
 					~smudge.value(source, max);
 				};
@@ -252,6 +245,8 @@ s.waitForBoot({
 		win.front;
 		CmdPeriod.add({win.close});
 	);
+
+	// Remote Control from web application via Open Sound Control
 
 	o = OSCFunc.new({|msg, time, addr, receivePort|
     		~button = msg[1];
