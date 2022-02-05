@@ -33,6 +33,7 @@ s.waitForBoot({
 
 	// Path to folder where the audio files are:
 	path = "~/Documents/DAW/SC/Samples/Installation/";
+	// path = "~/Documents/MLYS/";
 
 	// functions
 	~smudge = {|array, max|
