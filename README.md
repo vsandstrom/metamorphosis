@@ -1,6 +1,6 @@
 # metamorphosis
 
-In code, assign the path/to/your/audio/files/folder to the "path"-variable.
+In **Installation.scd**, assign the *path/to/your/audio/files/folder* to the "path"-variable.
 
 If done correctly, the installation can be run on a Raspberry Pi accessed through ssh by running 
 ```supercollider
