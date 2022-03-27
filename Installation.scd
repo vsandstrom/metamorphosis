@@ -8,6 +8,7 @@
 
 NetAddr.langPort; // Port: 57120
 
+
 s.boot;
 s.waitForBoot({
 	// SETUP
@@ -24,10 +25,25 @@ s.waitForBoot({
 	~button = 0;
 	~buttonSmudge = 0;
 
+	// SUPERCOLLIDER DOES *NOT* INLCUDE [sclang <***.scd>] IN ITS "ARGC" COUNT
+	~argv = thisProcess.argv;
+	Post << ~argv << Char.nl;
 	// Path to folder where the audio files are:
-	path = "~/Documents/DAW/SC/Samples/Installation/";
-	// path = "~/Documents/MLYS/";
+	if (~argv.size < 1) {
+		path = PathName(thisProcess.nowExecutingPath).pathOnly;
+		path = path +/+ "Samples";
+	}{
+		if( ~argv.size == 1 ){
+			path = ~argv[0];
+		}
+		{
+			thisProcess.shutdown;
+			0.exit;
+		}
+	};
 
+	// path = "~/Documents/DAW/SC/Installation/Samples";
+	
 	// functions
 	~smudge = {|array, max|
 		var padding = 150;
@@ -62,7 +78,6 @@ s.waitForBoot({
 			});
 		};
 	};
-
 	// {NHHall.ar(In.ar(0, 2), 4)}.play;
 
 	// housekeeping after restart
@@ -130,32 +145,32 @@ s.waitForBoot({
 			};
 
 			// PLAYING HERE
-				if (check == true) { // alternate between different buffers
-					check = false;
-					buf0 = Buffer.loadCollection(s, source, 2);
-					s.sync;
-					syn0 = {PlayBuf.ar(2, buf0, 1, doneAction: 2)}.play;
-					numC = buf0.numChannels
-					(((source.size / s.sampleRate) / 2)* 0.9).wait;
+			if (check == true) { // alternate between different buffers
+				check = false;
+				buf0 = Buffer.loadCollection(s, source, 2);
+				s.sync;
+				syn0 = {PlayBuf.ar(2, buf0, 1, doneAction: 2)}.play;
+				numC = buf0.numChannels
+				(((source.size / s.sampleRate) / 2)* 0.9).wait;
 
-				}{
-					check = true;
-					buf1 = Buffer.loadCollection(s, source, 2);
-					s.sync;
-					syn1 = {PlayBuf.ar(2, buf1, 1, doneAction: 2)}.play;
-					numC = buf1.numChannels
-					(((source.size / s.sampleRate) / 2)* 0.9).wait;
-					// ((source.size / 48000) / 4).wait;
-				};
+			}{
+				check = true;
+				buf1 = Buffer.loadCollection(s, source, 2);
+				s.sync;
+				syn1 = {PlayBuf.ar(2, buf1, 1, doneAction: 2)}.play;
+				numC = buf1.numChannels
+				(((source.size / s.sampleRate) / 2)* 0.9).wait;
+				// ((source.size / 48000) / 4).wait;
+			};
 
 
 			// DO TRANSFORMATION HERE
 					// array manipulation
 
-				// smudge before adding new chunks? gives "clarity" to new chunks introduced
-				if(~buttonSmudge > 0.5) {
-					~smudge.value(source, max);
-				};
+			// smudge before adding new chunks? gives "clarity" to new chunks introduced
+			if(~buttonSmudge > 0.5) {
+				~smudge.value(source, max);
+			};
 
 
 			// METAMORPHOSIS
@@ -177,8 +192,7 @@ s.waitForBoot({
 	play.play;
 
 	fork{
-				// if reset button has been pressed => reset Routine
-		loop{
+		loop{	// if reset button has been pressed => reset Routine
 			if (~button > 0.5)
 			{play.stop; play.reset; Buffer.freeAll; syn0.free; syn1.free; 1.wait; "Reset!".postln;
 			}{
@@ -248,19 +262,28 @@ s.waitForBoot({
 
 	// Remote Control from web application via Open Sound Control
 
-	o = OSCFunc.new({|msg, time, addr, receivePort|
-    		~button = msg[1];
-	}, '/reset');
+	(
+		o = OSCFunc.new({|msg, time, addr, receivePort|
+			~button = msg[1];
+		}, '/reset');
 
-	p = OSCFunc.new({|msg, time, addr, receivePort|
-    		~buttonSmudge = msg[1];
-	}, '/smudge');
+		p = OSCFunc.new({|msg, time, addr, receivePort|
+			~buttonSmudge = msg[1];
+			if (~buttonSmudge > 0) {
+				Post << "smudge On" << $\n;
+			}{
+				Post << "smudge Off" << $\n;
+			};
+		}, '/smudge');
 
-	q = OSCFunc.new({|msg, time, addr, receivePort|
-    		~slider0 = msg[1];
-	}, '/slider0');
+		q = OSCFunc.new({|msg, time, addr, receivePort|
+			~slider0 = msg[1];
+			Post << "Number of windows: " << ~slider0 << Char.nl;
+		}, '/slider0');
 
-	r = OSCFunc.new({|msg, time, addr, receivePort|
-    		~slider1 = msg[1];
-	}, '/slider1');
+		r = OSCFunc.new({|msg, time, addr, receivePort|
+			~slider1 = msg[1];
+			Post << "Size of window: " << ~slider1 << Char.nl;
+		}, '/slider1');
+	);
 });
